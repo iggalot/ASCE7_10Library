@@ -41,9 +41,9 @@ namespace ASCE7_10Library
     /// </summary>
     public class BuildingInfo
     {
-        public double B { get; set; } = 85.0;    // length normal to wind
-        public double L { get; set; } = 48.0;    // length parallel to wind
-        public double H { get; set; } = 35.0;    // mean roof height
+        public double B { get; set; }    // length normal to wind
+        public double L { get; set; }    // length parallel to wind
+        public double H { get; set; }    // mean roof height
 
         RiskCategories RiskCat = RiskCategories.II;
 
@@ -102,10 +102,12 @@ namespace ASCE7_10Library
         private double GustFactor = 0.85; // 3 second gust factor
 
         public ExposureCategories Exposure { get; set; } = ExposureCategories.B;
-        public double Q_H { get; set; } = 0.0;
-
         public BuildingInfo Building;
         public Double Speed;
+
+        public double Q_H { get; set; } = 0.0;
+        public double Q_0 { get; set; } = 0.0;
+        public double Q_15 { get; set; } = 0.0;
 
         public WindProvisions(double speed, BuildingInfo bldg, ExposureCategories exp = ExposureCategories.B)
         {
@@ -114,7 +116,18 @@ namespace ASCE7_10Library
             Exposure = exp;
 
             string status_msg = "";
-            Q_H = ASCE7_10_Compute_Q_H(Speed, Building, Exposure, out status_msg);
+            
+            /// windward pressure points
+            // Q0
+            Q_0 = ASCE7_10_Compute_Q(0.0, out status_msg);
+            Console.WriteLine(status_msg);
+            //Q15
+            Q_15 = ASCE7_10_Compute_Q(15.0, out status_msg);
+            Console.WriteLine(status_msg);
+            // Qh
+            Q_H = ASCE7_10_Compute_Q_H(out status_msg);
+            Console.WriteLine(status_msg);
+
         }
 
         /// <summary>
@@ -130,15 +143,25 @@ namespace ASCE7_10Library
             return kz;
         }
 
-        protected double ASCE7_10_Compute_Q_H(double speed, BuildingInfo bldg, ExposureCategories exp, out string msg)
+        protected double ASCE7_10_Compute_Q_H(out string msg)
+        {
+            string msg2 = "";
+            double qh = ASCE7_10_Compute_Q(Building.H, out msg2);
+            msg = msg2 + "\n";
+            msg += "Q at H=" + Q_H.ToString() + "\n";
+            return qh;
+        }
+
+
+        protected double ASCE7_10_Compute_Q(double elev, out string msg)
         {
             string msg2 = "";
             ASCE7_10_Wind_ComputeAlphaZG();
             msg = "Kz params -- alpha: " + kz_alpha.ToString() + "   zg: " + kz_zg.ToString() + "\n";
-            double qh = 0.00256 * Speed * Speed * Kzt * Kd * ComputeKz(bldg.H, out msg2);
+            double q = 0.00256 * Speed * Speed * Kzt * Kd * ComputeKz(elev, out msg2);
             msg += msg2 + "\n";
-            msg += "Qh = " + qh.ToString();
-            return qh;
+            msg += "Q @ " + elev.ToString() + " = " + q.ToString() + "\n";
+            return q;
         }
 
         /// <summary>
