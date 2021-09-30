@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ASCE7_10Library
 {
@@ -15,83 +11,7 @@ namespace ASCE7_10Library
         WIND_PARTIALLY_ENCLOSED = 1,
         WIND_OPEN = 2
     }
-    /// <summary>
-    /// Enum for the ASCE7-10 Exposure Categories
-    /// </summary>
-    public enum ExposureCategories
-    {
-        B = 0,
-        C = 1,
-        D = 2
-    }
-
-    /// <summary>
-    /// Enum for the ASCE7-10 Risk Categories
-    /// </summary>
-    public enum RiskCategories
-    {
-        I = 0,
-        II = 1,
-        III = 2,
-        IV = 3
-    }
-
-    /// <summary>
-    /// Class to hold basic building information
-    /// </summary>
-    public class BuildingInfo
-    {
-        public double B { get; set; }    // length normal to wind
-        public double L { get; set; }    // length parallel to wind
-        public double H { get; set; }    // mean roof height
-
-        RiskCategories RiskCat = RiskCategories.II;
-
-        double theta = 25; // roof slope
-
-        public double GetL_over_B()
-        {
-            return L / B;
-        }
-
-        public double GetH_over_L()
-        {
-            return H / L;
-        }
-
-        public BuildingInfo(double b, double l, double h, double angle, RiskCategories cat = RiskCategories.II)
-        {
-            string status_msg = "";
-            bool validInput = true;
-            if (b <= 0)
-            {
-                status_msg += "B cannot be less than zero! " + b.ToString() + "\n";
-                validInput = false;
-            }
-
-            if (l <= 0)
-            {
-                status_msg += "L cannot be less than zero! " + l.ToString() + "\n";
-                validInput = false;
-            }
-
-            if (h <= 0)
-            {
-                status_msg += "H cannot be less than zero! " + h.ToString() + "\n";
-                validInput = false;
-            }
-
-            if (!validInput)
-                throw new InvalidOperationException(status_msg);
-
-
-            // Otherwise create the object
-            B = b;
-            L = l;
-            H = h;
-            theta = angle;
-        }
-    }
+   
     public class WindProvisions
     {
         private double kz_alpha = 7;
@@ -109,14 +29,41 @@ namespace ASCE7_10Library
         public double Q_0 { get; set; } = 0.0;
         public double Q_15 { get; set; } = 0.0;
 
-        public WindProvisions(double speed, BuildingInfo bldg, ExposureCategories exp = ExposureCategories.B)
+        // Windward wall pressures
+        public double P_H_WW { get; set; } = 0.0;
+        public double P_15_WW { get; set; } = 0.0;
+        public double P_0_WW { get; set; } = 0.0;
+
+        // Leeward wall pressures
+        public double P_H_LW { get; set; } = 0.0;
+
+        // Sidewall pressures
+        public double P_H_SW { get; set; } = 0.0;
+
+
+        // Roof pressures
+
+
+        public double CP_WW { get; set; } = -0.8;
+        public double CP_SW { get; set; } = -0.7;
+        public double CP_LW { get; set; } = -0.5;
+
+        public double[] CP_WW_Roof { get; set; } = new double[] { 1.3, -0.9 };
+        public double[] CP_LW_Roof { get; set; } = new double[] { 1.3, -0.9 };
+        public double CP_Parapet { get; set; } = 2.5;
+
+        public WindProvisions(double speed, BuildingInfo bldg, ExposureCategories exp = ExposureCategories.B, double gust=0.85)
         {
             Speed = speed;
             Building = bldg;
             Exposure = exp;
+            GustFactor = gust;
+
+            Console.WriteLine("Speed: " + Speed.ToString() + " MPH" + "    Exposure: " + Exposure.ToString());
+            Console.WriteLine("GustFactor: " + GustFactor.ToString() + "   L/B: " + bldg.GetL_over_B().ToString() + "    h/L: " + bldg.GetH_over_L().ToString());
 
             string status_msg = "";
-            
+
             /// windward pressure points
             // Q0
             Q_0 = ASCE7_10_Compute_Q(0.0, out status_msg);
@@ -127,6 +74,57 @@ namespace ASCE7_10Library
             // Qh
             Q_H = ASCE7_10_Compute_Q_H(out status_msg);
             Console.WriteLine(status_msg);
+
+            Console.WriteLine("Dynamic Pressures:    Q_H = " + Q_H.ToString() + "  Q_15 = " + Q_15.ToString() + "  Q_0 = " + Q_0.ToString());
+
+            // Load the CP values
+            CP_WW =  0.8;
+            CP_SW = -0.7;
+            CP_LW = ComputeCP_LW(out status_msg);
+            Console.WriteLine("CP_WW = " + CP_WW.ToString() + "  CP_SW = " + CP_SW.ToString() + "  " + status_msg);
+
+            // Compute the WW pressures
+            P_H_WW = Q_H * GustFactor * CP_WW;
+            P_0_WW = Q_0 * GustFactor * CP_WW;
+            P_15_WW = Q_15 * GustFactor * CP_WW;
+
+            Console.WriteLine("Pressures:    P_H_WW = " + P_H_WW.ToString() + "  P_15_WW = " + P_15_WW.ToString() + "  P_0_WW = " + P_0_WW.ToString());
+
+            // Compute the LW pressure
+            P_H_LW = Q_H * GustFactor * CP_LW;
+
+            // Compute the SW pressure
+            P_H_SW = Q_H * GustFactor * CP_SW;
+
+            Console.WriteLine("              P_H_LW = " + P_H_LW.ToString() + "  P_H_SW = " + P_H_SW.ToString());
+
+
+        }
+
+        /// <summary>
+        /// Finds the leeward wall coefficient for CP from Figure 27.4.1.  Uses interpolation for L/B values.
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        protected double ComputeCP_LW(out string msg)
+        {
+            msg = "CP_LW = ";
+            double cp = -0.2;
+
+            if (Building.GetL_over_B() <= 1.0)
+            {
+                msg = "1.0 ";
+                cp = -0.5;
+            } else if (Building.GetL_over_B() <= 2.0)
+            {
+                cp = -0.5 + (Building.GetL_over_B() - 1.0) * (0.5 - 0.3) / (2.0 - 1.0);
+                msg = cp.ToString();
+            } else if (Building.GetL_over_B() < 4.0)
+            {
+                cp = -0.3 + (Building.GetL_over_B() - 2.0) * (0.3 - 0.2) / (4.0 - 2.0);
+                msg = cp.ToString();
+            }
+            return cp;
 
         }
 
@@ -165,7 +163,7 @@ namespace ASCE7_10Library
         }
 
         /// <summary>
-        /// sets the KZ parameter coefficients from Table 26.9-1 and 29.3-1
+        /// sets the coefficients for computing KZ from Table 26.9-1 and 29.3-1
         /// </summary>
         protected void ASCE7_10_Wind_ComputeAlphaZG()
         {
