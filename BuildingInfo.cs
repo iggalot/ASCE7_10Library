@@ -13,7 +13,7 @@ namespace ASCE7_10Library
 
         RiskCategories RiskCat = RiskCategories.II;
 
-        double theta = 25; // roof slope
+        public double RoofSlope = 25; // roof slope
 
         public double GetL_over_B()
         {
@@ -55,7 +55,7 @@ namespace ASCE7_10Library
             B = b;
             L = l;
             H = h;
-            theta = angle;
+            RoofSlope = angle;
         }
     }
 }
