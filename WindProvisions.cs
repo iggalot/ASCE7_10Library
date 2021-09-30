@@ -40,8 +40,16 @@ namespace ASCE7_10Library
         // Sidewall pressures
         public double P_H_SW { get; set; } = 0.0;
 
+        // Roof pressures Normal to Ridge - CASE A
+        // for 0 to h/2, h/2 to h, h to 2h, > h
+        public double[] P_H_ROOF_WW_NORMAL_CASEA { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        public double[] P_H_ROOF_WW_NORMAL_CASEB { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        public double[] P_H_ROOF_WW_PARALLEL_CASEA { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        public double[] P_H_ROOF_WW_PARALLEL_CASEB { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-        // Roof pressures
+        public double P_H_ROOF_LW_NORMAL { get; set; } = 0.0;
+        public double P_H_ROOF_LW_PARALLEL { get; set; } = 0.0;
+
 
 
         public double CP_WW { get; set; } = -0.8;
@@ -146,7 +154,43 @@ namespace ASCE7_10Library
 
             Console.WriteLine("              P_H_LW = " + P_H_LW.ToString() + "  P_H_SW = " + P_H_SW.ToString());
 
-            double[] roofCP_normal = ComputeCP_Roof(true, Building.RoofSlope, out status_msg);
+            // Compute the Roof pressures
+            // Normal to Ridge Case A
+            P_H_ROOF_WW_NORMAL_CASEA[0] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[0];
+            P_H_ROOF_WW_NORMAL_CASEA[1] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[1];
+            P_H_ROOF_WW_NORMAL_CASEA[2] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[2];
+            P_H_ROOF_WW_NORMAL_CASEA[3] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[3];
+            Console.WriteLine("Normal to Ridge Case A\n" + displayPressureValues(P_H_ROOF_WW_NORMAL_CASEA));
+
+            // Normal to Ridge Case B
+            P_H_ROOF_WW_NORMAL_CASEB[0] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[0];
+            P_H_ROOF_WW_NORMAL_CASEB[1] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[1];
+            P_H_ROOF_WW_NORMAL_CASEB[2] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[2];
+            P_H_ROOF_WW_NORMAL_CASEB[3] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[3];
+            Console.WriteLine("Normal to Ridge Case B\n" + displayPressureValues(P_H_ROOF_WW_NORMAL_CASEB));
+
+            //Parallel to Ridge Case A
+            P_H_ROOF_WW_PARALLEL_CASEA[0] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[0];
+            P_H_ROOF_WW_PARALLEL_CASEA[1] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[1];
+            P_H_ROOF_WW_PARALLEL_CASEA[2] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[2];
+            P_H_ROOF_WW_PARALLEL_CASEA[3] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[3];
+            Console.WriteLine("Parallel to Ridge Case A\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEA));
+
+            // Parallel to Ridge Case B
+            P_H_ROOF_WW_PARALLEL_CASEB[0] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[0];
+            P_H_ROOF_WW_PARALLEL_CASEB[1] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[1];
+            P_H_ROOF_WW_PARALLEL_CASEB[2] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[2];
+            P_H_ROOF_WW_PARALLEL_CASEB[3] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[3];
+            Console.WriteLine("Parallel to Ridge Case B\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEB));
+
+            // Leeward Roof Values
+            P_H_ROOF_LW_NORMAL = GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[4];
+            P_H_ROOF_LW_PARALLEL = GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[4];
+
+
+
+
+
         }
 
         /// <summary>
@@ -289,6 +333,17 @@ namespace ASCE7_10Library
             msg += "> 2h         " + arr[6] + "      " + arr[7] + "\n";
             msg += "---------------------------------------\n";
             msg += " LW ROOF:    CP_ROOF_LW: " + arr[8].ToString();
+            return msg;
+        }
+
+        private string displayPressureValues(double[] arr)
+        {
+            string msg = "Roof Pressure Values: " + "  h/L: " + Building.GetH_over_L().ToString() + "  theta: " + Building.RoofSlope.ToString() + "\n";
+            msg += "0 to h/2     " + arr[0] + "\n";
+            msg += "h/2 to h     " + arr[1] + "\n";
+            msg += "h to 2h      " + arr[2] + "\n";
+            msg += "> 2h         " + arr[3] + "\n";
+            msg += "---------------------------------------\n";
             return msg;
         }
 
