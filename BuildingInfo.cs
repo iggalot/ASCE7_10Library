@@ -25,6 +25,10 @@ namespace ASCE7_10Library
             return H / L;
         }
 
+        public double[] RoofZonePts { get; set; }
+
+
+
         public BuildingInfo(double b, double l, double h, double angle, RiskCategories cat = RiskCategories.II)
         {
             string status_msg = "";
@@ -56,6 +60,72 @@ namespace ASCE7_10Library
             L = l;
             H = h;
             RoofSlope = angle;
+
+            RoofZonePts = GetFlatRoofPressureZonePoints(0, 0);
         }
+
+        /// <summary>
+        /// Get the zone boundary locations for the roof measure relative to a reference point (usually 0,0)
+        /// </summary>
+        /// <param name="x_ref">x-coord reference location (usually the top of the windward wall</param>
+        /// <param name="y_ref">y-coord reference location (usually the top of the windward wall</param>
+        /// <returns></returns>
+        private double[] GetFlatRoofPressureZonePoints(double x_ref, double y_ref)
+        {
+            // Z1
+            double x_roof_z1_start = x_ref;
+            double x_roof_z2_start = x_ref;
+            double x_roof_z3_start = x_ref;
+            double x_roof_z4_start = x_ref;
+
+            double x_roof_z1_end;
+            double x_roof_z2_end;
+            double x_roof_z3_end;
+            double x_roof_z4_end;
+
+            if (L < H * 0.5)
+            {
+                x_roof_z1_end = x_ref + L;
+                x_roof_z2_start = x_ref + L;
+                x_roof_z2_end = x_ref + L;
+                x_roof_z3_start = x_ref +L;
+                x_roof_z3_end = x_ref + L;
+                x_roof_z4_start = x_ref +L;
+                x_roof_z4_end = x_ref + L;
+            }
+            else if (L < H)
+            {
+                x_roof_z1_end = x_ref + H * 0.5;
+                x_roof_z2_start = x_ref + H * 0.5;
+                x_roof_z2_end = x_ref + L;
+                x_roof_z3_start = x_ref + L;
+                x_roof_z3_end = x_ref + L;
+                x_roof_z4_start = x_ref + L;
+                x_roof_z4_end = x_ref + L;
+            }
+            else if (L < H * 2.0)
+            {
+                x_roof_z1_end = x_ref + H * 0.5;
+                x_roof_z2_start = x_ref + H * 0.5;
+                x_roof_z2_end = x_ref + H;
+                x_roof_z3_start = x_ref + H;
+                x_roof_z3_end = x_ref + L;
+                x_roof_z4_start = x_ref +L;
+                x_roof_z4_end = x_ref + L;
+            }
+            else
+            {
+                x_roof_z1_end = x_ref + H * 0.5;
+                x_roof_z2_start = x_ref + H * 0.5;
+                x_roof_z2_end = x_ref + H;
+                x_roof_z3_start = x_ref + H;
+                x_roof_z3_end = x_ref + H * 2.0;
+                x_roof_z4_start = x_ref + H * 2.0;
+                x_roof_z4_end = x_ref + L;
+            }
+
+            return new double[] { x_roof_z1_start, x_roof_z1_end, x_roof_z2_start, x_roof_z2_end, x_roof_z3_start, x_roof_z3_end, x_roof_z4_start, x_roof_z4_end };
+        }
+
     }
 }
