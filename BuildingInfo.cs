@@ -3,7 +3,7 @@
 namespace ASCE7_10Library
 {
     /// <summary>
-    /// Class to hold basic building information
+    /// Class to hold basic building information for flat roof structures
     /// </summary>
     public class BuildingInfo
     {
@@ -14,6 +14,8 @@ namespace ASCE7_10Library
         RiskCategories RiskCat = RiskCategories.II;
 
         public double RoofSlope = 25; // roof slope
+
+        public virtual double[] RoofProfile {get; set;}
 
         public double GetL_over_B()
         {
@@ -28,8 +30,16 @@ namespace ASCE7_10Library
         public double[] RoofZonePts { get; set; }
 
 
+        /// <summary>
+        /// Flat roof building constructor
+        /// </summary>
+        /// <param name="b"></param>
+        /// <param name="l"></param>
+        /// <param name="h"></param>
+        /// <param name="angle"></param>
+        /// <param name="cat"></param>
 
-        public BuildingInfo(double b, double l, double h, double angle, RiskCategories cat = RiskCategories.II)
+        public BuildingInfo(double b, double l, double h, double[]roof_profile, RiskCategories cat = RiskCategories.II)
         {
             string status_msg = "";
             bool validInput = true;
@@ -59,9 +69,13 @@ namespace ASCE7_10Library
             B = b;
             L = l;
             H = h;
-            RoofSlope = angle;
+            RiskCat = cat;
 
             RoofZonePts = GetFlatRoofPressureZonePoints(0, 0);
+
+            // The flat roof profile points for the roof
+            RoofProfile = roof_profile;
+            RoofSlope = Math.Atan((RoofProfile[3]-RoofProfile[1]) / (RoofProfile[2] - RoofProfile[0]));
         }
 
         /// <summary>
