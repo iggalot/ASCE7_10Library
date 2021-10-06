@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,6 +9,9 @@ namespace ASCE7_10Library
 {
     public class SlopedRoofBuildingInfo : BuildingInfo
     {
+        // Contains the coordinate for the ridge point
+        public Vector3 RIDGE_1 { get; set; }
+
         public override double[] RoofProfile {get; set;}
 
         /// <summary>

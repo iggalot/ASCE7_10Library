@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace ASCE7_10Library
 {
@@ -27,6 +28,17 @@ namespace ASCE7_10Library
             return H / L;
         }
 
+        public Vector4 WW_GRD_1 { get; set; }
+        public Vector4 WW_15_1 { get; set; }
+        public Vector4 WW_H_1 { get; set; }
+        public Vector4 ORIGIN { get; set; } = new Vector4();
+        public Vector4 RIDGE_1 { get; set; } = new Vector4();
+
+        public Vector4 LW_H_1 { get; set; }
+        public Vector4 LW_15_1 { get; set; }
+        public Vector4 LW_GRD_1 { get; set; }
+
+
         public double[] RoofZonePts { get; set; }
 
 
@@ -39,7 +51,7 @@ namespace ASCE7_10Library
         /// <param name="angle"></param>
         /// <param name="cat"></param>
 
-        public BuildingInfo(double b, double l, double h, double[]roof_profile, RiskCategories cat = RiskCategories.II)
+        public BuildingInfo(double b, double l, double h, double[] roof_profile, RiskCategories cat = RiskCategories.II)
         {
             string status_msg = "";
             bool validInput = true;
@@ -65,17 +77,49 @@ namespace ASCE7_10Library
                 throw new InvalidOperationException(status_msg);
 
 
-            // Otherwise create the object
-            B = b;
-            L = l;
-            H = h;
+
+
+            // Find the mean height of the roof (the max of 0, 2, 4, ... elements of the roof profile
+
             RiskCat = cat;
+
+            // Vectors for the points of the structure profile based on the provided dimensions
+            // 0,0 is assumed to be lower left for windward wall
+            int count = roof_profile.Length;
+            WW_GRD_1 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            WW_15_1 = new Vector4(0.0f, 15.0f, 0.0f, 1.0f);
+            WW_H_1 = new Vector4((float)roof_profile[0], (float)roof_profile[1], 0.0f, 1.0f);
+            LW_H_1 = new Vector4((float)roof_profile[count-2], (float)roof_profile[count-1], 0.0f, 1.0f);
+            LW_GRD_1 = new Vector4((float) l, 0.0f, 0.0f, 1.0f);
+            LW_15_1 = new Vector4((float)l, 15.0f, 0.0f, 1.0f);
+
+            // Set the origin of the model to be the midpoint at ground level
+            ORIGIN = new Vector4((float)0.5 * (WW_GRD_1.X + LW_GRD_1.X), (float)0.5 * (WW_GRD_1.Y + LW_GRD_1.Y), (float)0.5 * (WW_GRD_1.Z + LW_GRD_1.Z), 1.0f);
 
             RoofZonePts = GetFlatRoofPressureZonePoints(0, 0);
 
             // The flat roof profile points for the roof
             RoofProfile = roof_profile;
             RoofSlope = Math.Atan((RoofProfile[3]-RoofProfile[1]) / (RoofProfile[2] - RoofProfile[0]));
+
+            // Otherwise create the object
+            B = b;
+            L = l;
+
+            // Determine our mean roof height -- using the y-coords (1, 3, 5, 7, ...) of roof_profile
+            double max_ht = 0;
+            for (int i = 1; i < roof_profile.Length; i=i+2)
+            {
+                if(roof_profile[i] > max_ht)
+                {
+                    max_ht = roof_profile[i];
+                    RIDGE_1 = new Vector4((float)roof_profile[i - 1], (float)roof_profile[i], 0.0f, 1.0f);
+                }
+            }
+
+
+            // Take the average of the lesser of the windward wall height and the leeward wall height -- needed in case of unequal wall heights.
+            H = 0.5 * (max_ht + Math.Min(roof_profile[1], roof_profile[roof_profile.Length -1]));
         }
 
         /// <summary>
