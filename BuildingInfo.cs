@@ -93,8 +93,11 @@ namespace ASCE7_10Library
             LW_GRD_1 = new Vector4(LW_H_1.X, 0.0f, 0.0f, 1.0f);
             LW_15_1 = new Vector4(LW_H_1.X, 15.0f, 0.0f, 1.0f);
 
-            // Set the origin of the model to be the midpoint at ground level
-            ORIGIN_1 = new Vector4((float)0.5 * (WW_GRD_1.X + LW_GRD_1.X), (float)0.5 * (WW_GRD_1.Y + LW_GRD_1.Y), (float)0.5 * (WW_GRD_1.Z + LW_GRD_1.Z), 1.0f);
+            // Set the origin of the model to be the midpoint at ground level -- uses the average of the base points
+            ORIGIN_1 = new Vector4((float)(0.5 * (WW_GRD_1.X + LW_GRD_1.X) + 0.5 * ((float)WW_GRD_2.X + (float)LW_GRD_2.X) / 2.0f),
+                (float)(0.5 * (WW_GRD_1.Y + LW_GRD_1.Y) + 0.5 * ((float)WW_GRD_2.Y + (float)LW_GRD_2.Y) / 2.0f),
+                (float)(0.5 * (WW_GRD_1.Z + LW_GRD_1.Z) + 0.5 * ((float)WW_GRD_2.Z + (float)LW_GRD_2.Z) / 2.0f),
+                1.0f);
 
             // Vectors for the points of the east-west frame 2 structure profile based on the provided dimensions
             // 0,0 is assumed to be lower left for windward wall
@@ -105,8 +108,11 @@ namespace ASCE7_10Library
             LW_GRD_2 = new Vector4(LW_H_1.X, 0.0f, roof_profile_2[count_2 - 1].Z, 1.0f);
             LW_15_2 = new Vector4(LW_H_1.X, 15.0f, roof_profile_2[count_2 - 1].Z, 1.0f);
 
-            // Set the origin of the model to be the midpoint at ground level
-            ORIGIN_2 = new Vector4((float)0.5 * (WW_GRD_2.X + LW_GRD_2.X), (float)0.5 * (WW_GRD_2.Y + LW_GRD_2.Y), (float)0.5 * (WW_GRD_2.Z + LW_GRD_2.Z), 1.0f);
+            // Set the origin of the model to be the midpoint at ground level -- uses the average of the base points
+            ORIGIN_2 = new Vector4((float)(0.5 * (WW_GRD_1.X + LW_GRD_1.X) + 0.5 * ((float)WW_GRD_2.X + (float)LW_GRD_2.X) / 2.0f),
+                (float)(0.5 * (WW_GRD_1.Y + LW_GRD_1.Y) + 0.5 * ((float)WW_GRD_2.Y + (float)LW_GRD_2.Y) / 2.0f),
+                (float)(0.5 * (WW_GRD_1.Z + LW_GRD_1.Z) + 0.5 * ((float)WW_GRD_2.Z + (float)LW_GRD_2.Z) / 2.0f),
+                1.0f);
 
             // The roof profile points for the roof
             RoofProfile_1 = roof_profile_1;
