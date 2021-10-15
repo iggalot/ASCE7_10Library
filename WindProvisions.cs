@@ -25,9 +25,9 @@ namespace ASCE7_10Library
         public BuildingInfo Building;
         public Double Speed;
 
-        public double Q_H { get; set; } = 0.0;
-        public double Q_0 { get; set; } = 0.0;
-        public double Q_15 { get; set; } = 0.0;
+        public double Q_H_WW { get; set; } = 0.0;
+        public double Q_0_WW { get; set; } = 0.0;
+        public double Q_15_WW { get; set; } = 0.0;
 
         // Windward wall pressures
         public double P_H_WW { get; set; } = 0.0;
@@ -40,14 +40,18 @@ namespace ASCE7_10Library
         // Sidewall pressures
         public double P_H_SW { get; set; } = 0.0;
 
-        // Roof pressures Normal to Ridge - CASE A
+        // Roof pressures Normal to Ridge - CASE A (dowward) and CASE B (upward)
         // for 0 to h/2, h/2 to h, h to 2h, > h
         public double[] P_H_ROOF_WW_NORMAL_CASEA { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
         public double[] P_H_ROOF_WW_NORMAL_CASEB { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        public double P_H_ROOF_LW_NORMAL { get; set; } = 0.0;
+
+
+
+        // Roof pressures PArallel to Ridge - CASE A (dowward) and CASE B (upward)
+        // for 0 to h/2, h/2 to h, h to 2h, > h
         public double[] P_H_ROOF_WW_PARALLEL_CASEA { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
         public double[] P_H_ROOF_WW_PARALLEL_CASEB { get; set; } = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-        public double P_H_ROOF_LW_NORMAL { get; set; } = 0.0;
         public double P_H_ROOF_LW_PARALLEL { get; set; } = 0.0;
 
 
@@ -117,16 +121,16 @@ namespace ASCE7_10Library
 
             /// windward pressure points
             // Q0
-            Q_0 = ASCE7_10_Compute_Q(0.0, out status_msg);
+            Q_0_WW = ASCE7_10_Compute_Q(0.0, out status_msg);
             Console.WriteLine(status_msg);
             //Q15
-            Q_15 = ASCE7_10_Compute_Q(15.0, out status_msg);
+            Q_15_WW = ASCE7_10_Compute_Q(15.0, out status_msg);
             Console.WriteLine(status_msg);
             // Qh
-            Q_H = ASCE7_10_Compute_Q_H(out status_msg);
+            Q_H_WW = ASCE7_10_Compute_Q_H(out status_msg);
             Console.WriteLine(status_msg);
 
-            Console.WriteLine("Dynamic Pressures:    Q_H = " + Q_H.ToString() + "  Q_15 = " + Q_15.ToString() + "  Q_0 = " + Q_0.ToString());
+            Console.WriteLine("Dynamic Pressures:    Q_H = " + Q_H_WW.ToString() + "  Q_15 = " + Q_15_WW.ToString() + "  Q_0 = " + Q_0_WW.ToString());
 
             // Load the CP values
             CP_WW =  0.8;
@@ -140,57 +144,57 @@ namespace ASCE7_10Library
             Console.WriteLine("Parallel to Ridge\n" + displayCPRoofValues(CP_ROOF_PARALLELTORIDGE));
 
             // Compute the WW pressures
-            P_H_WW = Q_H * GustFactor * CP_WW;
-            P_0_WW = Q_0 * GustFactor * CP_WW;
-            P_15_WW = Q_15 * GustFactor * CP_WW;
+            P_H_WW = Q_H_WW * GustFactor * CP_WW;
+            P_0_WW = Q_0_WW * GustFactor * CP_WW;
+            P_15_WW = Q_15_WW * GustFactor * CP_WW;
 
             Console.WriteLine("Pressures:    P_H_WW = " + P_H_WW.ToString() + "  P_15_WW = " + P_15_WW.ToString() + "  P_0_WW = " + P_0_WW.ToString());
 
             // Compute the LW pressure
-            P_H_LW = Q_H * GustFactor * CP_LW;
+            P_H_LW = Q_H_WW * GustFactor * CP_LW;
 
             // Compute the SW pressure
-            P_H_SW = Q_H * GustFactor * CP_SW;
+            P_H_SW = Q_H_WW * GustFactor * CP_SW;
 
             Console.WriteLine("              P_H_LW = " + P_H_LW.ToString() + "  P_H_SW = " + P_H_SW.ToString());
 
             // Compute the Roof pressures
             // Normal to Ridge Case A
-            P_H_ROOF_WW_NORMAL_CASEA[0] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[0];
-            P_H_ROOF_WW_NORMAL_CASEA[1] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[1];
-            P_H_ROOF_WW_NORMAL_CASEA[2] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[2];
-            P_H_ROOF_WW_NORMAL_CASEA[3] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[3];
+            P_H_ROOF_WW_NORMAL_CASEA[0] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[0];
+            P_H_ROOF_WW_NORMAL_CASEA[1] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[1];
+            P_H_ROOF_WW_NORMAL_CASEA[2] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[2];
+            P_H_ROOF_WW_NORMAL_CASEA[3] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[3];
             Console.WriteLine("Normal to Ridge Case A\n" + displayPressureValues(P_H_ROOF_WW_NORMAL_CASEA));
 
             // Normal to Ridge Case B
-            P_H_ROOF_WW_NORMAL_CASEB[0] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[0];
-            P_H_ROOF_WW_NORMAL_CASEB[1] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[1];
-            P_H_ROOF_WW_NORMAL_CASEB[2] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[2];
-            P_H_ROOF_WW_NORMAL_CASEB[3] = Q_H * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[3];
+            P_H_ROOF_WW_NORMAL_CASEB[0] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[0];
+            P_H_ROOF_WW_NORMAL_CASEB[1] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[1];
+            P_H_ROOF_WW_NORMAL_CASEB[2] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[2];
+            P_H_ROOF_WW_NORMAL_CASEB[3] = Q_H_WW * GustFactor * CP_ROOF_NORMALTORIDGE_CaseB[3];
             Console.WriteLine("Normal to Ridge Case B\n" + displayPressureValues(P_H_ROOF_WW_NORMAL_CASEB));
-
-            //Parallel to Ridge Case A
-            P_H_ROOF_WW_PARALLEL_CASEA[0] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[0];
-            P_H_ROOF_WW_PARALLEL_CASEA[1] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[1];
-            P_H_ROOF_WW_PARALLEL_CASEA[2] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[2];
-            P_H_ROOF_WW_PARALLEL_CASEA[3] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[3];
-            Console.WriteLine("Parallel to Ridge Case A\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEA));
-
-            // Parallel to Ridge Case B
-            P_H_ROOF_WW_PARALLEL_CASEB[0] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[0];
-            P_H_ROOF_WW_PARALLEL_CASEB[1] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[1];
-            P_H_ROOF_WW_PARALLEL_CASEB[2] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[2];
-            P_H_ROOF_WW_PARALLEL_CASEB[3] = Q_H * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[3];
-            Console.WriteLine("Parallel to Ridge Case B\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEB));
 
             // Leeward Roof Values
             P_H_ROOF_LW_NORMAL = GustFactor * CP_ROOF_NORMALTORIDGE_CaseA[4];
+
+
+
+
+            //Parallel to Ridge Case A
+            P_H_ROOF_WW_PARALLEL_CASEA[0] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[0];
+            P_H_ROOF_WW_PARALLEL_CASEA[1] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[1];
+            P_H_ROOF_WW_PARALLEL_CASEA[2] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[2];
+            P_H_ROOF_WW_PARALLEL_CASEA[3] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[3];
+            Console.WriteLine("Parallel to Ridge Case A\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEA));
+
+            // Parallel to Ridge Case B
+            P_H_ROOF_WW_PARALLEL_CASEB[0] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[0];
+            P_H_ROOF_WW_PARALLEL_CASEB[1] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[1];
+            P_H_ROOF_WW_PARALLEL_CASEB[2] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[2];
+            P_H_ROOF_WW_PARALLEL_CASEB[3] = Q_H_WW * GustFactor * CP_ROOF_PARALLELTORIDGE_CaseB[3];
+            Console.WriteLine("Parallel to Ridge Case B\n" + displayPressureValues(P_H_ROOF_WW_PARALLEL_CASEB));
+
+            // Leeward Roof Values
             P_H_ROOF_LW_PARALLEL = GustFactor * CP_ROOF_PARALLELTORIDGE_CaseA[4];
-
-
-
-
-
         }
 
         /// <summary>
@@ -392,7 +396,7 @@ namespace ASCE7_10Library
             string msg2 = "";
             double qh = ASCE7_10_Compute_Q(Building.H, out msg2);
             msg = msg2 + "\n";
-            msg += "Q at H=" + Q_H.ToString() + "\n";
+            msg += "Q at H=" + Q_H_WW.ToString() + "\n";
             return qh;
         }
 
