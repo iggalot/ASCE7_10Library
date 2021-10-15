@@ -33,7 +33,19 @@ namespace ASCE7_10Library
         {
             return H / L;
         }
+        /// <summary>
+        /// Model Axis points
+        /// </summary>
+        public Vector4 UCS_X_START { get; set; }
+        public Vector4 UCS_X_END { get; set; }
+        public Vector4 UCS_Y_START { get; set; }
+        public Vector4 UCS_Y_END { get; set; }
+        public Vector4 UCS_Z_START { get; set; }
+        public Vector4 UCS_Z_END { get; set; }
 
+        /// <summary>
+        /// Building coords
+        /// </summary>
         public Vector4 WW_GRD_1 { get; set; }
         public Vector4 WW_15_1 { get; set; }
         public Vector4 WW_H_1 { get; set; }
@@ -71,6 +83,17 @@ namespace ASCE7_10Library
 
         public BuildingInfo(Vector4[] roof_profile_1, Vector4[] roof_profile_2, RoofSlopeTypes roof_slope_type, RiskCategories cat = RiskCategories.II, WindOrientations orient=WindOrientations.WIND_ORIENTATION_NORMALTORIDGE)
         {
+            float ucs_axis_length = 300;
+            // UCS points
+            UCS_X_START = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            UCS_Y_START = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            UCS_Z_START = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+
+            UCS_X_END = new Vector4(ucs_axis_length, 0.0f, 0.0f, 1.0f);
+            UCS_Y_END = new Vector4(0.0f, ucs_axis_length, 0.0f, 1.0f);
+            UCS_Z_END = new Vector4(0.0f, 0.0f, ucs_axis_length, 1.0f);
+
+
             // Find the mean height of the roof (the max of 0, 2, 4, ... elements of the roof profile
             RiskCat = cat;
             RoofSlopeType = roof_slope_type;
